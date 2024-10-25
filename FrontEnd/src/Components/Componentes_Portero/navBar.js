@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import myImg from "../../img/logo2.png"; /* Logo del conjutno */
 import { useUser } from "../../userContext";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
@@ -11,9 +10,10 @@ import { faChampagneGlasses } from "@fortawesome/free-solid-svg-icons";
 import { faHandshake } from "@fortawesome/free-solid-svg-icons";
 import { faPersonMilitaryPointing } from "@fortawesome/free-solid-svg-icons";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { createContext, useContext ,useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import Tabla from "./tabla";
 import InvitadoDetalle from "../../Pages/auth/portero/InvitadoDetalles";
+import axios from "axios";
 
 const TableContext = createContext();
 
@@ -26,40 +26,65 @@ library.add(faPersonMilitaryPointing);
 library.add(faXmark);
 
 export const NavBar = ({ children }) => {
-  const { setUser: setContextUser } = useUser();
   const [invitado, setInvitado] = useState(null);
   const [currentTable, setCurrentTable] = useState("Propietarios");
   const [showSideBar, setShowSideBar] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [name, setName] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8081/public")
+      .then((res) => {
+        if (res.data.Status === "Success") {
+          setName(res.data.nombreUsuario);
+        } else {
+          navigate("/");
+        }
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  const handleDelete = () => {
+    axios
+      .get("/public/logout")
+      .then((res) => {
+        navigate("/");
+      })
+      .catch((err) => console.log(err));
+  };
 
   return (
-    <TableContext.Provider value={{currentTable, setCurrentTable, invitado, setInvitado}}>
+    <TableContext.Provider
+      value={{ currentTable, setCurrentTable, invitado, setInvitado }}
+    >
       <div className="d-flex flex-column justify-content-start h-100 ">
-      {/* Barra de navegación */}
-      <div>
-        <nav className="navbar navbar-expand-lg navbar-dark py-2 bg-dark">
-          <div className="container px-lg-5 d-flex flex-row justify-content-between">
-            <div>
-              <button
-                class="btn"
-                type="button"
-                onClick={() => {
-                  showSideBar === true
-                    ? setShowSideBar(false)
-                    : setShowSideBar(true);
-                }}
-              >
-                . . .
-              </button>
-            </div>
+        {/* Barra de navegación */}
+        <div>
+          <nav className="navbar navbar-expand-lg navbar-dark py-2 bg-dark">
+            <div className="container px-lg-5 d-flex flex-row justify-content-between">
+              <div>
+                <button
+                  class="btn"
+                  type="button"
+                  onClick={() => {
+                    showSideBar === true
+                      ? setShowSideBar(false)
+                      : setShowSideBar(true);
+                  }}
+                >
+                  . . .
+                </button>
+              </div>
 
-            <div>
-              <img
-                src={myImg}
-                style={{ width: 70, height: 70 }}
-                alt="Icon"
-              ></img>
-            </div>
+              <div>
+                <img
+                  src={myImg}
+                  style={{ width: 70, height: 70 }}
+                  alt="Icon"
+                ></img>
+              </div>
 
             <div className="btn-group">
               <div className="collapse navbar-collapse" id="navContent">
@@ -219,12 +244,9 @@ export const NavBar = ({ children }) => {
       </div>
     </div>
     </TableContext.Provider>
-    
   );
 };
 
 export const useTable = () => {
   return useContext(TableContext);
-}
-
-
+};

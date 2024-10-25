@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import myImg from "../../img/logo2.png"; /* Logo del conjutno */
 import { useUser } from "../../userContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tabla from "./tabla";
-
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
@@ -25,9 +25,33 @@ library.add(faXmark);
 export function NavBar() {
   const { setUser: setContextUser } = useUser();
   const [currentTable, setCurrentTable] = useState("Apartamentos");
+  const [name, setName] = useState("");
   const [showSideBar, setShowSideBar] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [currentDropMenu, setCurrentDropMenu] = useState("Acción");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8081/public")
+      .then((res) => {
+        if (res.data.Status === "Success") {
+          setName(res.data.nombreUsuario);
+        } else {
+          navigate("/");
+        }
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  const handleDelete = () => {
+    axios
+      .get("/public/logout")
+      .then((res) => {
+        navigate("/");
+      })
+      .catch((err) => console.log(err));
+  };
 
   return (
     <div className="d-flex flex-column justify-content-start h-100 ">
@@ -106,7 +130,7 @@ export function NavBar() {
                 </li>
                 <li>
                   <Link
-                    onClick={() => setContextUser(null)}
+                    onClick={handleDelete}
                     className="dropdown-item text-danger"
                     to="/"
                   >
@@ -313,7 +337,7 @@ export function NavBar() {
             className="z-0"
             item={
               currentTable === "Apartamentos"
-                ? ["Código de vivienda", "Número de parqueadero"]
+                ? ["Código de vivienda", "Bloque", "Numero de apartamento", "Torre"]
                 : currentTable === "Propietarios"
                 ? [
                     "Código de vivienda",
@@ -321,7 +345,8 @@ export function NavBar() {
                     "Teléfono",
                     "Correo",
                     "Número de Documento",
-                    "Meses Atrasados",
+                    "Numero de parqueadero",
+                    "Placa de Vehículo"
                   ]
                 : currentTable === "Parqueadero"
                 ? ["Número de Espacio", "Tipo de Espacio", "Estado"]
@@ -332,7 +357,6 @@ export function NavBar() {
                     "Teléfono",
                     "Correo",
                     "Número de parqueadero",
-                    "Costo",
                     "Código de Vivienda",
                   ]
                 : currentTable === "ReservaSalon"

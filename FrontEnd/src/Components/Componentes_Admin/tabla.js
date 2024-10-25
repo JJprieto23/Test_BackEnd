@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Solicitudes from "./solicitudes";
@@ -15,6 +15,8 @@ import Reporte from "./reporte";
 import { faAnglesRight } from "@fortawesome/free-solid-svg-icons";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
 
+const TableContext = createContext();
+
 const Tabla = ({ item, apiS }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -23,7 +25,7 @@ const Tabla = ({ item, apiS }) => {
   const [data, setDatos] = useState([]);
 
   useEffect(() => {
-    async function fetchApartamentos() {
+    const fetchApartamentos = async () => {
       try {
         if (apiS === "Informacion" || apiS === "Reporte") {
           const response = await axios.get(
@@ -36,7 +38,6 @@ const Tabla = ({ item, apiS }) => {
         } else {
           const response = await axios.get(`/admin/get${apiS}`);
           setDatos(response.data);
-          console.log(response.data)
           if (response.data.length === 0) {
             setDatos([]);
           }
@@ -44,10 +45,45 @@ const Tabla = ({ item, apiS }) => {
       } catch (error) {
         console.error("Error al obtener los apartamentos:", error);
       }
-    }
+    };
 
     fetchApartamentos();
   }, [apiS]);
+
+  const [dataApart, setDatosApart] = useState([]);
+
+  useEffect(() => {
+    async function fetchApartamentos() {
+      try {
+        const response = await axios.get(`/public/Apartamentos`);
+        setDatosApart(response.data);
+        if (response.data.length === 0) {
+          setDatosApart([]);
+        }
+      } catch (error) {
+        console.error("Error al obtener los apartamentos:", error);
+      }
+    }
+
+    fetchApartamentos();
+  }, []);
+
+  const [dataEsp, setdataEsp] = useState([]);
+
+  useEffect(() => {
+    async function fetchApartamentos() {
+      try {
+        const response = await axios.get(`/admin/getParqueadero`);
+        setdataEsp(response.data);
+        if (response.data.length === 0) {
+          setdataEsp([]);
+        }
+      } catch (error) {
+        console.error("Error al obtener los apartamentos:", error);
+      }
+    }
+    fetchApartamentos();
+  }, []);
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
@@ -82,24 +118,30 @@ const Tabla = ({ item, apiS }) => {
                 item={item}
                 currentRecords={currentRecords}
                 apiS={apiS}
+                data={dataApart}
               />
             ) : apiS === "Propietarios" ? (
               <Propietario
                 item={item}
                 currentRecords={currentRecords}
                 apiS={apiS}
+                data={dataApart}
+                data2={dataEsp}
               />
             ) : apiS === "Parqueadero" ? (
               <Parqueadero
                 item={item}
                 currentRecords={currentRecords}
                 apiS={apiS}
+                data={dataEsp}
               />
             ) : apiS === "Invitados" ? (
               <Invitados
                 item={item}
                 currentRecords={currentRecords}
                 apiS={apiS}
+                data={dataApart}
+                data2={dataEsp}
               />
             ) : apiS === "Reuniones" ? (
               <Reunion
