@@ -193,12 +193,9 @@ export const NavBar = ({ children }) => {
               item={
                 currentTable === "Propietarios"
                   ? [
-                      "Código de vivienda",
                       "Nombre",
                       "Teléfono",
-                      "Correo",
-                      "Número de Documento",
-                      "Meses Atrasados",
+                      "Código de vivienda"
                     ]
                   : currentTable === "Parqueadero"
                   ? ["Número de Espacio", "Tipo de Espacio", "Estado"]

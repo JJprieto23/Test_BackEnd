@@ -137,9 +137,102 @@ app.post('/vista_perfil', (req, res) => {
   });
 });
 
+// Ruta para obtener datos de vista_propietarios_portero
+app.get("/getpropietarios", (req, res) => {
+  const sql = "SELECT * FROM vista_propietarios_portero";
+  db.query(sql, (err, data) => {
+    if (err) {
+      console.error("Error en la consulta:", err);
+      return res.status(500).json({ Error: "Error al consultar los datos" });
+    }
+    res.json(data);
+  });
+});
 
+// Ruta para consultar los espacios de parqueadero
+app.get("/espacios_parqueadero", (req, res) => {
+  const sql = "SELECT * FROM espacios_parqueadero";
+  db.query(sql, (err, data) => {
+    if (err) {
+      console.error("Error en la consulta:", err);
+      return res.status(500).json({ Error: "Error al consultar los datos" });
+    }
+    res.json(data);
+  });
+});
 
+// Ruta para obtener los invitados
+app.get('/invitados', (req, res) => {
+  const query = 'SELECT * FROM vista_invitados';
+
+  db.query(query, (error, results) => {
+    if (error) {
+      return res.status(500).json({ error: 'Error al consultar los invitados' });
+    }
+    res.json(results);
+  });
+});
+
+// Ruta para insertar un invitado
+app.post('/insertinvitados', async (req, res) => {
+  const {
+    nombre,
+    apellido,
+    telefono,
+    numDocumento,
+    correo,
+    idParqueaderoFk,
+    placaVehiculo,
+    tiempoParqueadero,
+    idApartamentoFK,
+  } = req.body;
+
+  try {
+    const query = `
+      CALL Inserción_Invitado(?, ?, ?, ?, ?, ?, ?, ?, ?);
+    `;
+
+    const values = [
+      nombre,
+      apellido,
+      telefono,
+      numDocumento,
+      correo,
+      idParqueaderoFk,
+      placaVehiculo,
+      tiempoParqueadero,
+      idApartamentoFK,
+    ];
+
+    // Ejecutar el procedimiento almacenado
+    await pool.query(query, values);
+    
+    res.status(201).json({ message: 'Invitado insertado correctamente' });
+  } catch (error) {
+    console.error('Error al insertar invitado:', error);
+    res.status(500).json({ error: 'Error al insertar invitado' });
+  }
+});
+
+// Ruta para eliminar un invitado
+router.delete('/invitados/:numDocumento', async (req, res) => {
+  const { numDocumento } = req.params;
+
+  try {
+    const query = `
+      CALL Eliminar_Invitado(?);
+    `;
+
+    // Ejecutar el procedimiento almacenado
+    await pool.query(query, [numDocumento]);
+    
+    res.status(200).json({ message: 'Invitado eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar invitado:', error);
+    res.status(500).json({ error: 'Error al eliminar invitado' });
+  }
+});
 
 app.listen(8081, () => {
-  console.log("Servidor corriendo en el puerto 8081");
+  console.log('Servidor corriendo en el puerto 8081');
 });
